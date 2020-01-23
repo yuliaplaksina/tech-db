@@ -20,6 +20,8 @@ ENV POSTGRES_USER forum_user
 ENV POSTGRES_PASSWORD testpass
 EXPOSE $PORT
 
+EXPOSE 5432
+
 RUN apt-get update && apt-get install -y postgresql-$PGVER
 
 USER postgres
@@ -29,11 +31,11 @@ RUN service postgresql start &&\
     createdb -O forum_user forum_db &&\
     service postgresql stop
 
-COPY db.conf /etc/postgresql/$PGVER/main/db.conf
+ADD ./db.conf /etc/postgresql/$PGVER/main/conf.d/basic.conf
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
 COPY dum_hw_pdb.sql .
-RUN ls /usr
 COPY --from=builder /usr/src/app/tech-db .
 CMD service postgresql start && ./tech-db
+

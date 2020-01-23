@@ -34,7 +34,7 @@ CREATE TABLE public.forum (
 );
 
 
-ALTER TABLE public.forum OWNER TO forum_user;
+ALTER TABLE public.forum OWNER TO postgres;
 
 CREATE SEQUENCE public.forum_id_seq
     AS integer
@@ -45,7 +45,7 @@ CREATE SEQUENCE public.forum_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.forum_id_seq OWNER TO forum_user;
+ALTER TABLE public.forum_id_seq OWNER TO postgres;
 ALTER SEQUENCE public.forum_id_seq OWNED BY public.forum.id;
 
 
@@ -60,7 +60,7 @@ CREATE TABLE public.forum_user (
 );
 
 
-ALTER TABLE public.forum_user OWNER TO forum_user;
+ALTER TABLE public.forum_user OWNER TO postgres;
 
 --
 -- Name: post; Type: TABLE; Schema: public; Owner: postgres
@@ -78,7 +78,7 @@ CREATE TABLE public.post (
      path bigint[] DEFAULT '{0}'::bigint[] NOT NULL
 );
 
-ALTER TABLE public.post OWNER TO forum_user;
+ALTER TABLE public.post OWNER TO postgres;
 
 CREATE SEQUENCE public.post_id_seq
     AS integer
@@ -88,7 +88,7 @@ CREATE SEQUENCE public.post_id_seq
     NO MAXVALUE
     CACHE 1;
 
-ALTER TABLE public.post_id_seq OWNER TO forum_user;
+ALTER TABLE public.post_id_seq OWNER TO postgres;
 ALTER SEQUENCE public.post_id_seq OWNED BY public.post.id;
 
 
@@ -112,7 +112,7 @@ CREATE TABLE public.thread (
        votes integer DEFAULT 0
 );
 
-ALTER TABLE public.thread OWNER TO forum_user;
+ALTER TABLE public.thread OWNER TO postgres;
 
 CREATE SEQUENCE public.thread_id_seq
     AS integer
@@ -122,7 +122,7 @@ CREATE SEQUENCE public.thread_id_seq
     NO MAXVALUE
     CACHE 1;
 
-ALTER TABLE public.thread_id_seq OWNER TO forum_user;
+ALTER TABLE public.thread_id_seq OWNER TO postgres;
 ALTER SEQUENCE public.thread_id_seq OWNED BY public.thread.id;
 
 
@@ -143,7 +143,7 @@ CREATE TABLE public."user" (
 );
 
 
-ALTER TABLE public."user" OWNER TO forum_user;
+ALTER TABLE public."user" OWNER TO postgres;
 
 CREATE SEQUENCE public.user_id_seq
     START WITH 1
@@ -153,7 +153,7 @@ CREATE SEQUENCE public.user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_id_seq OWNER TO forum_user;
+ALTER TABLE public.user_id_seq OWNER TO postgres;
 ALTER SEQUENCE public.user_id_seq OWNED BY public."user".id;
 
 CREATE UNIQUE INDEX user_email_uindex ON public."user" USING btree (lower(email));
@@ -169,7 +169,7 @@ CREATE TABLE public.vote (
 );
 
 
-ALTER TABLE public.vote OWNER TO forum_user;
+ALTER TABLE public.vote OWNER TO postgres;
 
 --
 -- Name: forum id; Type: DEFAULT; Schema: public; Owner: postgres
@@ -179,7 +179,7 @@ ALTER TABLE ONLY public.forum ALTER COLUMN id SET DEFAULT nextval('public.forum_
 
 
 --
--- Name: post id; Type: DEFAULT; Schema: public; Owner: forum_user
+-- Name: post id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.post ALTER COLUMN id SET DEFAULT nextval('public.post_id_seq'::regclass);
