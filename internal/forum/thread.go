@@ -122,7 +122,7 @@ func (ts *ThreadService) SelectThreadByForum(forum string, limit int, since stri
 		sqlQuery := `
 		SELECT t.author, t.created, t.forum, t.id, t.message, t.slug, t.title, t.votes
 		FROM public.thread as t 
-		WHERE lower(t.forum) = lower($1) AND t.created > $3
+		WHERE lower(t.forum) = lower($1) AND t.created >= $3
 		ORDER BY t.created 
 		LIMIT $2`
 		rows, err = ts.db.Query(sqlQuery, forum, limit, since)
@@ -138,7 +138,7 @@ func (ts *ThreadService) SelectThreadByForum(forum string, limit int, since stri
 		sqlQuery := `
 		SELECT t.author, t.created, t.forum, t.id, t.message, t.slug, t.title, t.votes
 		FROM public.thread as t 
-		WHERE lower(t.forum) = lower($1) AND t.created < $3
+		WHERE lower(t.forum) = lower($1) AND t.created <= $3
 		ORDER BY t.created DESC 
 		LIMIT $2`
 		rows, err = ts.db.Query(sqlQuery, forum, limit, since)
@@ -149,7 +149,7 @@ func (ts *ThreadService) SelectThreadByForum(forum string, limit int, since stri
 	for rows.Next() {
 		threadScan := Thread{}
 		slug := sql.NullString{}
-		err := rows.Scan(&threadScan.Author, &threadScan.Created, &threadScan.Forum, &threadScan.Id, &threadScan.Message, &slug, &threadScan.Title, &threadScan.Votes)
+		err := rows.Scan(&threadScan.Author, &threadScan.Created, &threadScan.Forum ,&threadScan.Id, &threadScan.Message, &slug, &threadScan.Title, &threadScan.Votes)
 		if err != nil {
 			return threads, err
 		}
@@ -233,13 +233,13 @@ func (ts *ThreadService) SelectPosts(threadID int, limit, since, sort, desc stri
 	}
 
 	if sort == "flat" {
-		sqlQuery = "SELECT p.id, p.parent, p.thread, p.forum, p.author, p.created, p.message, p.is_edited, p.path FROM public.post as p WHERE p.thread = $1 "
+		sqlQuery = "SELECT p.id, p.parent, p.thread, p.forum, p.author, p.created, p.message, p.is_edited, p.path FROM public.post as p WHERE thread = $1 "
 		if since != "" {
 			sqlQuery += fmt.Sprintf(" AND id %s %s ", conditionSign, since)
 		}
-		sqlQuery += fmt.Sprintf(" ORDER BY p.created %s, p.id LIMIT %s", desc, limit)
+		sqlQuery += fmt.Sprintf(" ORDER BY p.created %s, p.id %s LIMIT %s", desc, desc, limit)
 	} else if sort == "tree" {
-		orderString := fmt.Sprintf(" ORDER BY p.path[1] %s, p.path ", desc)
+		orderString := fmt.Sprintf(" ORDER BY p.path[1] %s, p.path %s ", desc, desc)
 		sqlQuery = "SELECT p.id, p.parent, p.thread, p.forum, p.author, p.created, p.message, p.is_edited, p.path " +
 			"FROM public.post as p " +
 			"WHERE p.thread = $1 "

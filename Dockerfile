@@ -31,7 +31,7 @@ RUN service postgresql start &&\
     createdb -O forum_user forum_db &&\
     service postgresql stop
 
-ADD ./db.conf /etc/postgresql/$PGVER/main/conf.d/basic.conf
+COPY postgres.conf /etc/postgresql/12/main/postgresql.conf
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
