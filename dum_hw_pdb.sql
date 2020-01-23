@@ -158,6 +158,7 @@ ALTER SEQUENCE public.user_id_seq OWNED BY public."user".id;
 
 CREATE UNIQUE INDEX user_email_uindex ON public."user" USING btree (lower(email));
 CREATE UNIQUE INDEX user_nick_name_uindex ON public."user" USING btree (lower(nick_name));
+CREATE INDEX user_index ON public."user" USING btree (lower(nick_name), nick_name, email, full_name, about);
 --
 -- Name: vote; Type: TABLE; Schema: public; Owner: postgres
 --
