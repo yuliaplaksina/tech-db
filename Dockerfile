@@ -29,8 +29,7 @@ RUN service postgresql start &&\
     createdb -O forum_user forum_db &&\
     service postgresql stop
 
-#COPY config/pg_hba.conf /etc/postgresql/$PGVER/main/pg_hba.conf
-#COPY config/postgresql.conf /etc/postgresql/$PGVER/main/postgresql.conf
+COPY db.conf /etc/postgresql/$PGVER/main/db.conf
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
