@@ -22,20 +22,22 @@ EXPOSE $PORT
 
 EXPOSE 5432
 
-RUN apt-get update && apt-get install -y postgresql-$PGVER
+RUN apt-get update && apt-get install -y postgresql-$PGVER && apt-get install postgresql-contrib
+
+COPY db.sql .
 
 USER postgres
 
 RUN service postgresql start &&\
     psql --command "CREATE USER forum_user WITH SUPERUSER PASSWORD 'testpass';" &&\
-    createdb -O forum_user forum_db &&\
+    createdb -O forum_user forum_db < ./db.sql &&\
     service postgresql stop
 
 COPY postgres.conf /etc/postgresql/12/main/postgresql.conf
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
-COPY dum_hw_pdb.sql .
+
 COPY --from=builder /usr/src/app/tech-db .
 CMD service postgresql start && ./tech-db
 

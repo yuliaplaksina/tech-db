@@ -20,17 +20,19 @@ SET default_tablespace = '';
 
 SET default_with_oids = false;
 
+CREATE EXTENSION IF NOT EXISTS citext;
+
 --
 -- Name: forum; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.forum (
       id integer NOT NULL,
-      slug varchar(100) NOT NULL,
+      slug citext NOT NULL,
       threads integer DEFAULT 0 NOT NULL,
       posts integer DEFAULT 0 NOT NULL,
       title varchar(100) NOT NULL,
-      "user" varchar NOT NULL
+      "user" citext NOT NULL
 );
 
 
@@ -68,9 +70,9 @@ ALTER TABLE public.forum_user OWNER TO postgres;
 
 CREATE TABLE public.post (
      id integer NOT NULL,
-     author varchar NOT NULL,
+     author citext NOT NULL,
      created text NOT NULL,
-     forum varchar NOT NULL,
+     forum citext NOT NULL,
      is_edited boolean DEFAULT false NOT NULL,
      message text NOT NULL,
      parent integer DEFAULT 0 NOT NULL,
@@ -92,8 +94,8 @@ ALTER TABLE public.post_id_seq OWNER TO postgres;
 ALTER SEQUENCE public.post_id_seq OWNED BY public.post.id;
 
 
-CREATE INDEX post_author_forum_index ON public.post USING btree (lower(author), lower(forum));
-CREATE INDEX post_forum_index ON public.post USING btree (lower(forum));
+CREATE INDEX post_author_forum_index ON public.post USING btree (author, forum);
+CREATE INDEX post_forum_index ON public.post USING btree (forum);
 CREATE INDEX post_parent_index ON public.post USING btree (parent);
 CREATE INDEX post_path_index ON public.post USING gin (path);
 CREATE INDEX post_thread_index ON public.post USING btree (thread);
@@ -103,11 +105,11 @@ CREATE INDEX post_thread_index ON public.post USING btree (thread);
 
 CREATE TABLE public.thread (
        id integer NOT NULL,
-       author varchar NOT NULL,
+       author citext NOT NULL,
        created timestamp with time zone DEFAULT now() NOT NULL,
-       forum varchar NOT NULL,
+       forum citext NOT NULL,
        message text NOT NULL,
-       slug varchar,
+       slug citext,
        title varchar NOT NULL,
        votes integer DEFAULT 0
 );
@@ -126,9 +128,9 @@ ALTER TABLE public.thread_id_seq OWNER TO postgres;
 ALTER SEQUENCE public.thread_id_seq OWNED BY public.thread.id;
 
 
-CREATE INDEX thread_forum_index ON public.thread USING btree (lower(forum));
+CREATE INDEX thread_forum_index ON public.thread USING btree (forum);
 CREATE UNIQUE INDEX thread_id_uindex ON public.thread USING btree (id);
-CREATE INDEX thread_slug_index ON public.thread USING btree (lower(slug));
+CREATE INDEX thread_slug_index ON public.thread USING btree (slug);
 
 --
 -- Name: user; Type: TABLE; Schema: public; Owner: postgres
@@ -136,8 +138,8 @@ CREATE INDEX thread_slug_index ON public.thread USING btree (lower(slug));
 
 CREATE TABLE public."user" (
        id integer NOT NULL,
-       nick_name varchar NOT NULL,
-       email varchar NOT NULL,
+       nick_name citext NOT NULL,
+       email citext NOT NULL,
        full_name varchar NOT NULL,
        about text
 );
@@ -156,9 +158,9 @@ CREATE SEQUENCE public.user_id_seq
 ALTER TABLE public.user_id_seq OWNER TO postgres;
 ALTER SEQUENCE public.user_id_seq OWNED BY public."user".id;
 
-CREATE UNIQUE INDEX user_email_uindex ON public."user" USING btree (lower(email));
-CREATE UNIQUE INDEX user_nick_name_uindex ON public."user" USING btree (lower(nick_name));
-CREATE INDEX user_index ON public."user" USING btree (lower(nick_name), nick_name, email, full_name, about);
+CREATE UNIQUE INDEX user_email_uindex ON public."user" USING btree (email);
+CREATE UNIQUE INDEX user_nick_name_uindex ON public."user" USING btree (nick_name);
+CREATE INDEX user_index ON public."user" USING btree (nick_name, email, full_name, about);
 --
 -- Name: vote; Type: TABLE; Schema: public; Owner: postgres
 --

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/jackc/pgx"
 	"github.com/labstack/echo"
 	"math"
@@ -55,7 +54,6 @@ func (h *Forum) CreateThread(ctx echo.Context) (Err error) {
 
 	newThread := forum.Thread{}
 	if err := ctx.Bind(&newThread); err != nil {
-		fmt.Println(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 

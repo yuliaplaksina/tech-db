@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"tech-db/internal/forum"
 	"github.com/jackc/pgx"
 	"github.com/labstack/echo"
 	"net/http"
+	"tech-db/internal/forum"
 )
 
 type User struct {

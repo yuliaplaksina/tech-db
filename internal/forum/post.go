@@ -41,9 +41,7 @@ func (ps *PostService) InsertPost(post Post) (lastId int, err error) {
 }
 
 func (ps *PostService) UpdatePostMessage(newMessage string, id int) (countUpdateString int64, err error) {
-	sqlQuery := `UPDATE public.post SET message = $1,
-                       is_edited = true
-	where post.id = $2`
+	sqlQuery := `UPDATE public.post SET message = $1, is_edited = true where post.id=$2`
 	result, err := ps.db.Exec(sqlQuery, newMessage, id)
 	if err != nil {
 		return
@@ -53,17 +51,11 @@ func (ps *PostService) UpdatePostMessage(newMessage string, id int) (countUpdate
 }
 
 func (ps *PostService) CreatePosts(thread Thread, forumId int, created string, posts []Post) (post []Post, err error) {
-	/*	tx, err := ps.db.Begin()
-		if err != nil {
-			return nil, err
-		}
-	defer tx.Rollback()*/
-
 	sqlStr := "INSERT INTO public.post(id, parent, thread, forum, author, created, message, path) VALUES "
 	vals := []interface{}{}
 	for _, post := range posts {
 		var authorId int
-		err = ps.db.QueryRow(`SELECT "user".id FROM public."user" WHERE LOWER("user".nick_name) = LOWER($1)`,
+		err = ps.db.QueryRow(`SELECT "user".id FROM public."user" WHERE "user".nick_name = $1`,
 			post.Author,
 		).Scan(&authorId)
 		if err != nil {
@@ -138,16 +130,3 @@ func ReplaceSQL(old, searchPattern string) string {
 	}
 	return old
 }
-
-/*func (ps *PostService) CheckPosts(threadId int, posts []Post) (err error) {
-	_, err := h.UserService.FindUserByNickName(newPosts[i].Author)
-	if err != nil {
-		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Can'ps find user"})
-	}
-	if newPosts[i].Parent != 0 {
-		err = h.PostService.FindPostById(newPosts[i].Parent, newPosts[i].Thread)
-		if err != nil {
-			return ctx.JSON(http.StatusConflict, forum.ErrorMessage{Message: "Can'ps find post"})
-		}
-	}
-}*/

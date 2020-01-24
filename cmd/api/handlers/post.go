@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/jackc/pgx"
 	"github.com/labstack/echo"
 	"net/http"
@@ -144,7 +143,6 @@ func (h *Post) CreatePosts(ctx echo.Context) error {
 		if err.Error() == "404" {
 			return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Can't find post author by nickname:"})
 		}
-		fmt.Println(err)
 		return ctx.JSON(http.StatusConflict, forum.ErrorMessage{Message: "Parent post was created in another thread"})
 	}
 

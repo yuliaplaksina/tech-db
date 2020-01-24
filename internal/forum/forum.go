@@ -15,14 +15,14 @@ func NewForumService(db *pgx.ConnPool) *ForumService {
 func (fs *ForumService) SelectFullForumBySlug(slug string) (forum Forum, err error) {
 	sqlQuery := `SELECT f.slug, f.title, f.user
 	FROM public.forum as f
-	where lower(f.slug) = lower($1)`
+	where f.slug = $1`
 	err = fs.db.QueryRow(sqlQuery, slug).Scan(&forum.Slug, &forum.Title, &forum.User)
 	if err != nil {
 		return
 	}
 	sqlQuery = `SELECT count(*)
 	FROM public.thread as t
-	where lower(t.forum) = lower($1)`
+	where t.forum = $1`
 	err = fs.db.QueryRow(sqlQuery, slug).Scan(&forum.Threads)
 	if err != nil {
 		return
@@ -30,7 +30,7 @@ func (fs *ForumService) SelectFullForumBySlug(slug string) (forum Forum, err err
 	sqlQuery = `
 	SELECT count(*)
 	FROM public.post as p
-	where lower(p.forum) = lower($1)`
+	where p.forum = $1`
 	err = fs.db.QueryRow(sqlQuery, slug).Scan(&forum.Posts)
 	return
 }
@@ -39,7 +39,7 @@ func (fs *ForumService) SelectForumBySlug(slug string) (forum Forum, err error) 
 	sqlQuery := `
 	SELECT f.id, f.slug, f.title, f.user, f.threads, f.posts
 	FROM public.forum as f
-	where lower(f.slug) = lower($1)`
+	where f.slug = $1`
 	err = fs.db.QueryRow(sqlQuery, slug).Scan(&forum.Id, &forum.Slug, &forum.Title, &forum.User, &forum.Threads, &forum.Posts)
 	return
 }
@@ -79,7 +79,7 @@ func (fs *ForumService) UpdateThreadCount(forumId int) (err error) {
 func (fs *ForumService) UpdatePostCount(forum string, count int) (err error) {
 	sqlQuery := `
 	UPDATE public.forum SET posts = posts + $2
-	WHERE Lower(forum.slug) = Lower($1)`
+	WHERE forum.slug = $1`
 	_, err = fs.db.Exec(sqlQuery, forum, count)
 	return
 }

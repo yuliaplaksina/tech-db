@@ -15,7 +15,7 @@ func NewUserService(db *pgx.ConnPool) *UserService {
 func (us *UserService) SelectUserByNickNameOrEmail(nickName, email string) (users []User, err error) {
 	sqlQuery := `SELECT u.id, u.nick_name, u.email, u.full_name, u.about
 	FROM public.user as u 
-	where lower(u.nick_name) = lower($1) or lower(u.email) = lower($2)`
+	where u.nick_name=$1 or u.email=$2`
 	rows, err := us.db.Query(sqlQuery, nickName, email)
 	if err != nil {
 		return users, err
@@ -37,7 +37,7 @@ func (us *UserService) SelectUserByNickNameOrEmail(nickName, email string) (user
 func (us *UserService) SelectUserByNickName(nickName string) (user User, err error) {
 	sqlQuery := `SELECT u.nick_name, u.email, u.full_name, u.about
 	FROM public.user as u 
-	where lower(u.nick_name) = lower($1)`
+	where u.nick_name=$1`
 	err = us.db.QueryRow(sqlQuery, nickName).Scan(&user.NickName, &user.Email, &user.FullName, &user.About)
 	return
 }
@@ -51,7 +51,7 @@ func (us *UserService) SelectUsersByForum(forumId int, limit int, since string, 
 		FROM public.user as u
 		JOIN public.forum_user as fu ON fu.user_id = u.id
 		WHERE fu.forum_id = $1
-		ORDER BY LOWER(nick_name) COLLATE "C" ASC
+		ORDER BY nick_name COLLATE "C" ASC
 		LIMIT $2`
 			rows, err = us.db.Query(sqlQuery, forumId, limit)
 			if err != nil {
@@ -63,7 +63,7 @@ func (us *UserService) SelectUsersByForum(forumId int, limit int, since string, 
 		FROM public.user as u
 		JOIN public.forum_user as fu ON fu.user_id = u.id
 		WHERE fu.forum_id = $1
-		ORDER BY LOWER(nick_name) COLLATE "C" DESC
+		ORDER BY nick_name COLLATE "C" DESC
 		LIMIT $2`
 			rows, err = us.db.Query(sqlQuery, forumId, limit)
 			if err != nil {
@@ -76,8 +76,8 @@ func (us *UserService) SelectUsersByForum(forumId int, limit int, since string, 
 		SELECT u.nick_name, u.email, u.full_name, u.about
 		FROM public.user as u
 		JOIN public.forum_user as fu ON fu.user_id = u.id
-		WHERE fu.forum_id = $1 AND LOWER(nick_name) > lower($3)
-		ORDER BY LOWER(nick_name) COLLATE "C" ASC
+		WHERE fu.forum_id = $1 AND nick_name > $3
+		ORDER BY nick_name COLLATE "C" ASC
 		LIMIT $2`
 			rows, err = us.db.Query(sqlQuery, forumId, limit, since)
 			if err != nil {
@@ -88,8 +88,8 @@ func (us *UserService) SelectUsersByForum(forumId int, limit int, since string, 
 		SELECT u.nick_name, u.email, u.full_name, u.about
 		FROM public.user as u
 		JOIN public.forum_user as fu ON fu.user_id = u.id
-		WHERE fu.forum_id = $1 AND LOWER(nick_name) < lower($3)
-		ORDER BY LOWER(nick_name) COLLATE "C" DESC
+		WHERE fu.forum_id = $1 AND nick_name < $3
+		ORDER BY nick_name COLLATE "C" DESC
 		LIMIT $2`
 			rows, err = us.db.Query(sqlQuery, forumId, limit, since)
 			if err != nil {
@@ -137,7 +137,7 @@ func (us *UserService) UpdateUser(user User) error {
 func (us *UserService) FindUserByNickName(nickName string) (user User, err error) {
 	sqlQuery := `SELECT u.id, u.nick_name
 	FROM public.user as u 
-	where lower(u.nick_name) = lower($1)`
+	where u.nick_name=$1`
 	err = us.db.QueryRow(sqlQuery, nickName).Scan(&user.Id, &user.NickName)
 	return
 }
