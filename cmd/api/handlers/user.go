@@ -14,17 +14,17 @@ type User struct {
 func (h *User) CreateUser(ctx echo.Context) (Err error) {
 	nickName := ctx.Param("nickname")
 	if nickName == "" {
-		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
+		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Empty nickname"})
 	}
 	newUser := forum.User{}
 	if err := ctx.Bind(&newUser); err != nil {
-		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
+		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: err.Error()})
 	}
 	newUser.NickName = nickName
 
 	userSlice, err := h.UserService.SelectUserByNickNameOrEmail(newUser.NickName, newUser.Email)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
+		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: err.Error()})
 	}
 
 	if len(userSlice) > 0 {
@@ -32,7 +32,7 @@ func (h *User) CreateUser(ctx echo.Context) (Err error) {
 	}
 
 	if err = h.UserService.InsertUser(newUser); err != nil {
-		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
+		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: err.Error()})
 	}
 
 	return ctx.JSON(http.StatusCreated, newUser)

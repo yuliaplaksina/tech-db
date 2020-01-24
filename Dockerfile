@@ -15,9 +15,9 @@ ENV PGVER 11
 ENV PORT 5000
 ENV POSTGRES_HOST localhost
 ENV POSTGRES_PORT 5432
-ENV POSTGRES_DB forum_db
-ENV POSTGRES_USER forum_user
-ENV POSTGRES_PASSWORD testpass
+ENV POSTGRES_DB forum
+ENV POSTGRES_USER forum
+ENV POSTGRES_PASSWORD forum
 EXPOSE $PORT
 
 EXPOSE 5432
@@ -28,16 +28,20 @@ COPY db.sql .
 
 USER postgres
 
+RUN echo "host all  all    0.0.0.0/0  trust" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+RUN  echo 'local all forum trust' | cat - /etc/postgresql/$PGVER/main/pg_hba.conf > /etc/postgresql/$PGVER/main/pg_hba.conf.bak && mv /etc/postgresql/$PGVER/main/pg_hba.conf.bak /etc/postgresql/$PGVER/main/pg_hba.conf
+
 RUN service postgresql start &&\
-    psql --command "CREATE USER forum_user WITH SUPERUSER PASSWORD 'testpass';" &&\
-    createdb -O forum_user forum_db < ./db.sql &&\
+    psql --command "CREATE USER forum WITH SUPERUSER PASSWORD 'forum';" &&\
+    createdb -O forum forum &&\
+    psql -U forum forum < ./db.sql &&\
     service postgresql stop
 
-COPY postgres.conf /etc/postgresql/12/main/postgresql.conf
+
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
-
+COPY postgres.conf /etc/postgresql/12/main/postgresql.conf
 COPY --from=builder /usr/src/app/tech-db .
 CMD service postgresql start && ./tech-db
 

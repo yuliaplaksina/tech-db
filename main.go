@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	connectionString = "postgres://forum_user:testpass@localhost:5432/forum_db?sslmode=disable"
+	connectionString = "postgres://forum:forum@localhost:5432/forum?sslmode=disable"
 	host             = "0.0.0.0:5000"
 	maxConn = 2000
 )
