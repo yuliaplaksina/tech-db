@@ -17,8 +17,7 @@ func NewThreadService(db *pgx.ConnPool) *ThreadService {
 
 func (ts *ThreadService) SelectThreadBySlug(threadSlug string) (thread Thread, err error) {
 	sqlQuery := `SELECT t.id, t.author, t.created, t.forum, t.message, t.slug, t.title, t.votes
-	FROM public.thread as t 
-	where t.slug=$1`
+	FROM thread as t where t.slug=$1`
 	var slug sql.NullString
 	err = ts.db.QueryRow(sqlQuery, threadSlug).Scan(&thread.Id, &thread.Author, &thread.Created, &thread.Forum, &thread.Message, &slug, &thread.Title, &thread.Votes)
 	if err != nil {
@@ -32,8 +31,7 @@ func (ts *ThreadService) SelectThreadBySlug(threadSlug string) (thread Thread, e
 
 func (ts *ThreadService) SelectThreadById(id int) (thread Thread, err error) {
 	sqlQuery := `SELECT t.author, t.created, t.id, t.forum, t.message, t.slug, t.title, t.votes
-	FROM public.thread as t 
-	where t.id=$1`
+	FROM thread as t where t.id=$1`
 	err = ts.db.QueryRow(sqlQuery, id).Scan(&thread.Author, &thread.Created, &thread.Id, &thread.Forum, &thread.Message, &thread.Slug, &thread.Title, &thread.Votes)
 	if err != nil {
 		return
@@ -42,9 +40,7 @@ func (ts *ThreadService) SelectThreadById(id int) (thread Thread, err error) {
 }
 
 func (ts *ThreadService) InsertThread(thread Thread) (id int, err error) {
-	sqlQuery := `INSERT INTO public.thread (author, created, message, title, forum, slug)
-	VALUES ($1,$2,$3,$4,$5,$6)
-	RETURNING id`
+	sqlQuery := `INSERT INTO thread (author, created, message, title, forum, slug) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`
 	err = ts.db.QueryRow(sqlQuery, thread.Author, thread.Created, thread.Message, thread.Title, thread.Forum, thread.Slug).Scan(&id)
 	return
 }
@@ -54,7 +50,7 @@ func (ts *ThreadService) SelectThreadByForum(forum string, limit int, since stri
 	if since == "" && !desc {
 		sqlQuery := `
 		SELECT t.author, t.created, t.forum, t.id, t.message, t.slug, t.title, t.votes
-		FROM public.thread as t 
+		FROM thread as t 
 		WHERE t.forum = $1
 		ORDER BY t.created 
 		LIMIT $2`
@@ -62,7 +58,7 @@ func (ts *ThreadService) SelectThreadByForum(forum string, limit int, since stri
 	} else if since != "" && !desc {
 		sqlQuery := `
 		SELECT t.author, t.created, t.forum, t.id, t.message, t.slug, t.title, t.votes
-		FROM public.thread as t 
+		FROM thread as t 
 		WHERE t.forum = $1 AND t.created >= $3
 		ORDER BY t.created 
 		LIMIT $2`
@@ -70,7 +66,7 @@ func (ts *ThreadService) SelectThreadByForum(forum string, limit int, since stri
 	} else if since == "" && desc {
 		sqlQuery := `
 		SELECT t.author, t.created, t.forum, t.id, t.message, t.slug, t.title, t.votes
-		FROM public.thread as t 
+		FROM thread as t 
 		WHERE t.forum = $1
 		ORDER BY t.created DESC 
 		LIMIT $2`
@@ -78,7 +74,7 @@ func (ts *ThreadService) SelectThreadByForum(forum string, limit int, since stri
 	} else {
 		sqlQuery := `
 		SELECT t.author, t.created, t.forum, t.id, t.message, t.slug, t.title, t.votes
-		FROM public.thread as t 
+		FROM thread as t 
 		WHERE t.forum = $1 AND t.created <= $3
 		ORDER BY t.created DESC 
 		LIMIT $2`
@@ -104,20 +100,19 @@ func (ts *ThreadService) SelectThreadByForum(forum string, limit int, since stri
 }
 
 func (ts *ThreadService) FindThreadBySlug(slug string) (thread Thread, err error) {
-	sqlQuery := `SELECT t.author, t.created, t.id, t.forum, t.message, t.slug, t.title FROM public.thread as t where t.slug=$1`
+	sqlQuery := `SELECT t.author, t.created, t.id, t.forum, t.message, t.slug, t.title FROM thread as t where t.slug=$1`
 	err = ts.db.QueryRow(sqlQuery, slug).Scan(&thread.Author, &thread.Created, &thread.Id, &thread.Forum, &thread.Message, &thread.Slug, &thread.Title)
 	return
 }
 
 func (ts *ThreadService) FindThreadById(id int) (thread Thread, err error) {
-	sqlQuery := `SELECT t.author, t.created, t.id, t.forum, t.message, t.slug, t.title FROM public.thread as t where t.id = $1`
+	sqlQuery := `SELECT t.author, t.created, t.id, t.forum, t.message, t.slug, t.title FROM thread as t where t.id=$1`
 	err = ts.db.QueryRow(sqlQuery, id).Scan(&thread.Author, &thread.Created, &thread.Id, &thread.Forum, &thread.Message, &thread.Slug, &thread.Title)
 	return
 }
 
 func (ts *ThreadService) InsertVote(vote Vote) (err error) {
-	sqlQuery := `INSERT INTO public.vote (user_id, voice, thread_id)
-	VALUES ($1,$2,$3)`
+	sqlQuery := `INSERT INTO vote (user_id, voice, thread_id) VALUES ($1,$2,$3)`
 	_, err = ts.db.Exec(sqlQuery, vote.UserId, vote.Voice, vote.ThreadId)
 	return
 }
@@ -125,16 +120,16 @@ func (ts *ThreadService) InsertVote(vote Vote) (err error) {
 func (ts *ThreadService) SelectVote(vote Vote) (findVote Vote, err error) {
 	sqlQuery := `
 	SELECT v.user_id, v.voice, v.thread_id 
-	FROM public.vote as v
-	where v.user_id = $2 AND v.thread_id = $1`
+	FROM vote as v
+	where v.user_id=$2 AND v.thread_id=$1`
 	err = ts.db.QueryRow(sqlQuery, vote.ThreadId, vote.UserId).Scan(&findVote.UserId, &findVote.Voice, &findVote.ThreadId)
 	return
 }
 
 func (ts *ThreadService) UpdateVote(vote Vote) (countUpdatedRows int64, err error) {
 	sqlQuery := `
-	UPDATE public.vote SET voice = $1
-	where vote.user_id = $2 AND vote.thread_id = $3`
+	UPDATE vote SET voice = $1
+	where vote.user_id=$2 AND vote.thread_id=$3`
 	result, err := ts.db.Exec(sqlQuery, vote.Voice, vote.UserId, vote.ThreadId)
 	if err != nil {
 		return
@@ -145,7 +140,7 @@ func (ts *ThreadService) UpdateVote(vote Vote) (countUpdatedRows int64, err erro
 
 func (ts *ThreadService) UpdateThread(thread Thread) (err error) {
 	sqlQuery := `
-	UPDATE public.thread SET message = $1, title = $2 where thread.id = $3`
+	UPDATE thread SET message=$1, title=$2 where thread.id=$3`
 	_, err = ts.db.Exec(sqlQuery, thread.Message, thread.Title, thread.Id)
 	return
 }
@@ -159,7 +154,7 @@ func (ts *ThreadService) SelectPosts(threadID int, limit, since, sort, desc stri
 	}
 
 	if sort == "flat" {
-		sqlQuery = "SELECT p.id, p.parent, p.thread, p.forum, p.author, p.created, p.message, p.is_edited, p.path FROM public.post as p WHERE thread = $1 "
+		sqlQuery = "SELECT p.id, p.parent, p.thread, p.forum, p.author, p.created, p.message, p.is_edited, p.path FROM post as p WHERE thread=$1 "
 		if since != "" {
 			sqlQuery += fmt.Sprintf(" AND id %s %s ", conditionSign, since)
 		}
@@ -167,20 +162,20 @@ func (ts *ThreadService) SelectPosts(threadID int, limit, since, sort, desc stri
 	} else if sort == "tree" {
 		orderString := fmt.Sprintf(" ORDER BY p.path[1] %s, p.path %s ", desc, desc)
 		sqlQuery = "SELECT p.id, p.parent, p.thread, p.forum, p.author, p.created, p.message, p.is_edited, p.path " +
-			"FROM public.post as p " +
-			"WHERE p.thread = $1 "
+			"FROM post as p " +
+			"WHERE p.thread=$1 "
 		if since != "" {
-			sqlQuery += fmt.Sprintf(" AND p.path %s (SELECT p.path FROM public.post as p WHERE p.id = %s) ", conditionSign, since)
+			sqlQuery += fmt.Sprintf(" AND p.path %s (SELECT p.path FROM post as p WHERE p.id = %s) ", conditionSign, since)
 		}
 		sqlQuery += orderString
 		sqlQuery += fmt.Sprintf("LIMIT %s", limit)
 
 	} else if sort == "parent_tree" {
 		sqlQuery = "SELECT p.id, p.parent, p.thread, p.forum, p.author, p.created, p.message, p.is_edited, p.path " +
-			"FROM public.post as p " +
-			"WHERE p.thread = $1 AND p.path::integer[] && (SELECT ARRAY (select p.id from public.post as p WHERE p.thread = $1 AND p.parent = 0 "
+			"FROM post as p " +
+			"WHERE p.thread=$1 AND p.path::integer[] && (SELECT ARRAY (select p.id from post as p WHERE p.thread=$1 AND p.parent=0 "
 		if since != "" {
-			sqlQuery += fmt.Sprintf(" AND p.path %s (SELECT p.path[1:1] FROM public.post as p WHERE p.id = %s) ", conditionSign, since)
+			sqlQuery += fmt.Sprintf(" AND p.path %s (SELECT p.path[1:1] FROM post as p WHERE p.id = %s) ", conditionSign, since)
 		}
 		sqlQuery += fmt.Sprintf("ORDER BY p.path[1] %s, p.path LIMIT %s)) ", desc, limit)
 		sqlQuery += fmt.Sprintf("ORDER BY p.path[1] %s, p.path ", desc)
@@ -206,8 +201,8 @@ func (ts *ThreadService) SelectPosts(threadID int, limit, since, sort, desc stri
 
 func (ts *ThreadService) UpdateVoteCount(vote Vote) (err error) {
 	sqlQuery := `
-	UPDATE public.thread SET votes = votes + $1
-	where thread.id = $2`
+	UPDATE thread SET votes=votes+$1
+	where thread.id=$2`
 	_, err = ts.db.Exec(sqlQuery, vote.Voice, vote.ThreadId)
 	return
 }
