@@ -45,7 +45,8 @@ CREATE UNIQUE INDEX forum_slug_uindex ON forum USING btree (slug);
 
 CREATE TABLE forum_user (
        forum_id integer NOT NULL,
-       user_id integer NOT NULL
+       user_id integer NOT NULL,
+       CONSTRAINT forum_user_pk PRIMARY KEY (forum_id, user_id)
 );
 
 
