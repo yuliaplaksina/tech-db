@@ -26,7 +26,6 @@ func (h *Post) GetFullPost(ctx echo.Context) error {
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id < 0{
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -83,31 +82,25 @@ func (h *Post) EditMessage(ctx echo.Context) error {
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 	}
 	if id < 0 {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 	}
 	editMessage := forum.Message{}
 	if err := ctx.Bind(&editMessage); err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 	post, err := h.PostService.SelectPostById(id)
 	if err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 	}
 	if editMessage.Message != "" && editMessage.Message != post.Message {
 		num, err := h.PostService.UpdatePostMessage(editMessage.Message, id)
 		if err != nil {
-			ctx.Logger().Warn(err)
 			return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 		}
 		if num != 1 {
-			ctx.Logger().Warn(err)
 			return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Can't find post"})
 		}
 		post.Message = editMessage.Message
@@ -122,7 +115,6 @@ func (h *Post) CreatePosts(ctx echo.Context) error {
 	slugOrIdStr := ctx.Param("slug_or_id")
 	newPosts := []forum.Post{}
 	if err := ctx.Bind(&newPosts); err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 	var thread forum.Thread
@@ -168,7 +160,6 @@ func (h *Post) EditThread(ctx echo.Context) error {
 	slugOrIdStr := ctx.Param("slug_or_id")
 	var editThread forum.Thread
 	if err := ctx.Bind(&editThread); err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 	var thread forum.Thread
@@ -204,7 +195,6 @@ func (h *Post) CreateVote(ctx echo.Context) error {
 	slugOrIdStr := ctx.Param("slug_or_id")
 	var newVote forum.Vote
 	if err := ctx.Bind(&newVote); err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 	var thread forum.Thread

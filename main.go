@@ -5,7 +5,6 @@ import (
 	"github.com/jackc/pgx"
 	_ "github.com/jackc/pgx"
 	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
 	"io/ioutil"
 	"tech-db/cmd/api/handlers"
 	"tech-db/internal/forum"
@@ -71,7 +70,6 @@ func main() {
 	e.POST(prefix+"/service/clear", forum.Clean)
 	e.GET(prefix+"/service/status", forum.Status)
 
-	e.Use(middleware.Logger())
 	e.Logger.Warnf("start listening on %s", host)
 	if err := e.Start(host); err != nil {
 		e.Logger.Errorf("server error: %s", err)

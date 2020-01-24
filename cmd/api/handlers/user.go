@@ -18,14 +18,12 @@ func (h *User) CreateUser(ctx echo.Context) (Err error) {
 	}
 	newUser := forum.User{}
 	if err := ctx.Bind(&newUser); err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 	newUser.NickName = nickName
 
 	userSlice, err := h.UserService.SelectUserByNickNameOrEmail(newUser.NickName, newUser.Email)
 	if err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -34,7 +32,6 @@ func (h *User) CreateUser(ctx echo.Context) (Err error) {
 	}
 
 	if err = h.UserService.InsertUser(newUser); err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -71,7 +68,6 @@ func (h *User) EditProfile(ctx echo.Context) (Err error) {
 
 	userSlice, err := h.UserService.SelectUserByNickNameOrEmail(editUser.NickName, editUser.Email)
 	if err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 	if len(userSlice) > 1 {
@@ -95,7 +91,6 @@ func (h *User) EditProfile(ctx echo.Context) (Err error) {
 	}
 
 	if err = h.UserService.UpdateUser(editUser); err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 

@@ -19,7 +19,6 @@ type Forum struct {
 func (h *Forum) CreateForum(ctx echo.Context) (Err error) {
 	newForum := forum.Forum{}
 	if err := ctx.Bind(&newForum); err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -28,7 +27,6 @@ func (h *Forum) CreateForum(ctx echo.Context) (Err error) {
 		return ctx.JSON(http.StatusConflict, fullForum)
 	}
 	if err != pgx.ErrNoRows {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -43,7 +41,6 @@ func (h *Forum) CreateForum(ctx echo.Context) (Err error) {
 	newForum.User = user.NickName
 
 	if err = h.ForumService.InsertForum(newForum); err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -59,7 +56,6 @@ func (h *Forum) CreateThread(ctx echo.Context) (Err error) {
 	newThread := forum.Thread{}
 	if err := ctx.Bind(&newThread); err != nil {
 		fmt.Println(err)
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -91,14 +87,12 @@ func (h *Forum) CreateThread(ctx echo.Context) (Err error) {
 			return ctx.JSON(http.StatusConflict, thread)
 		}
 		if err != pgx.ErrNoRows {
-			ctx.Logger().Warn(err)
 			return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 		}
 	}
 
 	threadId, err := h.ThreadService.InsertThread(newThread)
 	if err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -106,18 +100,10 @@ func (h *Forum) CreateThread(ctx echo.Context) (Err error) {
 
 	err = h.ForumService.UpdateThreadCount(newThread.ForumId)
 	if err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusBadRequest, forum.ErrorMessage{Message: "Error"})
 	}
 
 	err = h.ForumService.InsertForumUser(newThread.ForumId, author.Id)
-	if err != nil {
-		ctx.Logger().Warn(err)
-	}
-	/*	thread, err := h.ThreadService.SelectThreadById(id)
-		if err != nil {
-			return ctx.JSON(http.StatusBadRequest, "")
-		}*/
 
 	return ctx.JSON(http.StatusCreated, newThread)
 }
@@ -148,11 +134,9 @@ func (h *Forum) GetForumThreads(ctx echo.Context) error {
 	limitStr := ctx.QueryParam("limit")
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 	}
 	if limit < 0 {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -166,7 +150,6 @@ func (h *Forum) GetForumThreads(ctx echo.Context) error {
 
 	threads, err := h.ThreadService.SelectThreadByForum(slug, limit, since, desc)
 	if err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -202,7 +185,6 @@ func (h *Forum) GetForumUsers(ctx echo.Context) error {
 		limit = math.MaxInt32
 	}
 	if limit < 0 {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 	}
 
@@ -215,7 +197,6 @@ func (h *Forum) GetForumUsers(ctx echo.Context) error {
 
 	users, err := h.UserService.SelectUsersByForum(usersForum.Id, limit, since, desc)
 	if err != nil {
-		ctx.Logger().Warn(err)
 		return ctx.JSON(http.StatusNotFound, forum.ErrorMessage{Message: "Error"})
 	}
 	if users == nil {
